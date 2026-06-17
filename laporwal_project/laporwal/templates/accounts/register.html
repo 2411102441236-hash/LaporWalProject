@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}Daftar{% endblock %}
+{% block extra_css %}
+.auth-wrap { min-height: calc(100vh - 160px); display: flex; align-items: center; justify-content: center; padding: 44px 16px; }
+.auth-card { background: #fff; border: 1px solid var(--line); border-top: 3px solid var(--amber); border-radius: 10px; padding: 38px; width: 100%; max-width: 480px; }
+.tab-switch { display: flex; background: #F1F4F4; border-radius: 7px; padding: 4px; margin-bottom: 22px; }
+.tab-btn { flex: 1; text-align: center; padding: 8px; border-radius: 5px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; background: transparent; color: var(--muted); text-decoration: none; transition: all 0.15s; }
+.tab-btn.active { background: #fff; color: var(--teal); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+.errorlist { list-style: none; padding: 0; margin: 4px 0 0; }
+.errorlist li { font-size: 12px; color: #dc3545; }
+{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="text-center mb-4">
+      <div style="font-family:var(--display);font-weight:800;font-size:18px;color:var(--teal-d)">Buat Akun Baru</div>
+      <p class="section-sub" style="font-size:13px">Bergabung dan mulai laporkan masalah infrastruktur</p>
+    </div>
+    <div class="tab-switch">
+      <a href="{% url 'login' %}" class="tab-btn">Masuk</a>
+      <a href="{% url 'register' %}" class="tab-btn active">Daftar</a>
+    </div>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <div class="row g-2 mb-3">
+        <div class="col-6">
+          <label class="form-label">Nama Depan *</label>
+          <input type="text" name="first_name" class="form-control w-100" placeholder="Nama depan" required value="{{ form.first_name.value|default:'' }}">
+          {% if form.first_name.errors %}<ul class="errorlist">{% for e in form.first_name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+        <div class="col-6">
+          <label class="form-label">Nama Belakang</label>
+          <input type="text" name="last_name" class="form-control w-100" placeholder="Nama belakang" value="{{ form.last_name.value|default:'' }}">
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Username *</label>
+        <input type="text" name="username" class="form-control w-100" placeholder="Pilih username unik" required value="{{ form.username.value|default:'' }}">
+        {% if form.username.errors %}<ul class="errorlist">{% for e in form.username.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Email *</label>
+        <input type="email" name="email" class="form-control w-100" placeholder="email@example.com" required value="{{ form.email.value|default:'' }}">
+        {% if form.email.errors %}<ul class="errorlist">{% for e in form.email.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Nomor HP</label>
+        <input type="text" name="phone" class="form-control w-100" placeholder="Contoh: 08123456789" value="{{ form.phone.value|default:'' }}">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Password *</label>
+        <input type="password" name="password1" class="form-control w-100" placeholder="Buat password kuat" required>
+        {% if form.password1.errors %}<ul class="errorlist">{% for e in form.password1.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Konfirmasi Password *</label>
+        <input type="password" name="password2" class="form-control w-100" placeholder="Ulangi password" required>
+        {% if form.password2.errors %}<ul class="errorlist">{% for e in form.password2.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <button type="submit" class="btn-green w-100" style="padding:12px;font-size:15px">
+        <i class="bi bi-person-check"></i>Buat Akun
+      </button>
+    </form>
+    <p class="text-center section-sub mt-3 mb-0" style="font-size:13px">
+      Sudah punya akun? <a href="{% url 'login' %}" class="text-green" style="font-weight:600;text-decoration:none">Masuk di sini</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

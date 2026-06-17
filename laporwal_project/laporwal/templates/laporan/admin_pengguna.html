@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block title %}Manajemen Pengguna{% endblock %}
+{% block extra_css %}
+.admin-wrap { max-width: 1100px; margin: 0 auto; padding: 28px 16px 48px; }
+.uavatar { width: 32px; height: 32px; border-radius: 7px; background: var(--teal-l); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--teal); font-family: var(--display); }
+{% endblock %}
+{% block content %}
+<div class="admin-wrap">
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h1 class="h-page" style="margin-bottom:2px">Manajemen Pengguna</h1>
+      <p class="section-sub mb-0">Kelola semua akun warga yang terdaftar</p>
+    </div>
+    <form method="get" class="d-flex gap-2">
+      <input type="text" name="q" value="{{ search }}" placeholder="Cari pengguna..." style="border:1.5px solid var(--line);border-radius:6px;padding:8px 13px;font-size:13px;width:220px">
+      <button type="submit" class="btn-teal" style="padding:8px 13px"><i class="bi bi-search"></i></button>
+    </form>
+  </div>
+
+  <div class="lw-card" style="padding:0;overflow:hidden">
+    <table class="tbl">
+      <thead>
+        <tr><th style="width:40px"></th><th>Nama</th><th>Email</th><th>HP</th><th>Laporan</th><th>Bergabung</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr>
+          <td><div class="uavatar">{{ u.get_initials }}</div></td>
+          <td style="font-weight:600">{{ u.get_full_name|default:u.username }}</td>
+          <td style="color:var(--muted)">{{ u.email }}</td>
+          <td style="color:var(--muted)">{{ u.phone|default:'-' }}</td>
+          <td style="text-align:center;font-weight:700;color:var(--teal);font-family:var(--display)">{{ u.total_laporan }}</td>
+          <td style="color:var(--muted)">{{ u.date_joined|date:"M Y" }}</td>
+          <td>
+            <span class="{% if u.is_active %}badge-selesai{% else %}badge-ditolak{% endif %}">
+              {% if u.is_active %}Aktif{% else %}Nonaktif{% endif %}
+            </span>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" class="text-center section-sub py-5">Tidak ada pengguna ditemukan.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% if users.has_other_pages %}
+    <div class="d-flex align-items-center justify-content-between px-4 py-3" style="border-top:1px solid var(--line)">
+      <span class="section-sub" style="font-size:12px">Menampilkan {{ users.start_index }}-{{ users.end_index }} dari {{ users.paginator.count }} pengguna</span>
+      <nav>
+        <ul class="pagination pagination-sm mb-0">
+          {% if users.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ users.previous_page_number }}{% if search %}&q={{ search }}{% endif %}">&laquo;</a></li>{% endif %}
+          {% for num in users.paginator.page_range %}
+          <li class="page-item {% if num == users.number %}active{% endif %}"><a class="page-link" href="?page={{ num }}{% if search %}&q={{ search }}{% endif %}">{{ num }}</a></li>
+          {% endfor %}
+          {% if users.has_next %}<li class="page-item"><a class="page-link" href="?page={{ users.next_page_number }}{% if search %}&q={{ search }}{% endif %}">&raquo;</a></li>{% endif %}
+        </ul>
+      </nav>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

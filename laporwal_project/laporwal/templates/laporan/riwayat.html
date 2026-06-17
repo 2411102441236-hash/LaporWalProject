@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Riwayat Laporan{% endblock %}
+{% block extra_css %}
+.report-row { background:#fff; border:1px solid var(--line); border-radius:8px; padding:13px; display:flex; gap:13px; align-items:center; margin-bottom:8px; text-decoration:none; color:inherit; transition:border-color 0.15s; }
+.report-row:hover { border-color:var(--teal); }
+.report-thumb { width:50px; height:50px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; color:#fff; }
+{% endblock %}
+{% block content %}
+<div style="max-width:800px;margin:0 auto;padding:28px 16px 48px">
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h1 class="h-page" style="margin-bottom:2px">Riwayat Laporan</h1>
+      <p class="section-sub mb-0">Laporan yang sudah selesai atau ditolak</p>
+    </div>
+    <a href="{% url 'buat_laporan' %}" class="btn-green"><i class="bi bi-plus"></i>Buat Laporan Baru</a>
+  </div>
+  {% for lap in laporan_list %}
+  <a href="{% url 'detail_laporan' lap.pk %}" class="report-row">
+    <div class="report-thumb" style="background:{{ lap.get_kategori_warna }}"><i class="bi {{ lap.get_kategori_icon }}"></i></div>
+    <div style="flex:1;min-width:0">
+      <p style="font-size:13px;font-weight:600;margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ lap.deskripsi }}</p>
+      <p class="section-sub mb-2" style="font-size:11px"><i class="bi bi-geo-alt me-1"></i>{{ lap.alamat|truncatechars:60 }}</p>
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge-{{ lap.kategori }}">{{ lap.get_kategori_display }}</span>
+        <span class="badge-{{ lap.status }}">{{ lap.get_status_display }}</span>
+        <span class="section-sub" style="font-size:10px;margin-left:auto">{{ lap.dibuat_pada|date:"d M Y" }}</span>
+      </div>
+    </div>
+  </a>
+  {% empty %}
+  <div class="text-center py-5 lw-card">
+    <i class="bi bi-archive fs-1 d-block mb-3 text-green"></i>
+    <p style="font-weight:600" class="mb-1">Belum ada riwayat laporan</p>
+    <p class="section-sub small">Laporan selesai dan ditolak akan tampil di sini</p>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

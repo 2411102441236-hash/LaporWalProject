@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Notifikasi{% endblock %}
+{% block content %}
+<div style="max-width:700px;margin:0 auto;padding:28px 16px 48px">
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <h1 class="h-page" style="margin-bottom:0">Notifikasi</h1>
+    <a href="?mark_read=1" class="text-green text-decoration-none" style="font-size:13px;font-weight:600">Tandai semua dibaca</a>
+  </div>
+  <div class="lw-card" style="padding:0;overflow:hidden">
+    {% for notif in notif_list %}
+    <div style="display:flex;gap:13px;padding:15px 17px;border-bottom:1px solid var(--line);{% if not notif.sudah_dibaca %}border-left:3px solid var(--amber);background:#FFFDF7{% else %}border-left:3px solid transparent{% endif %}">
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:{% if not notif.sudah_dibaca %}700{% else %}500{% endif %};color:var(--ink);margin-bottom:3px">{{ notif.judul }}</div>
+        <div class="section-sub" style="font-size:12px;margin-bottom:4px">{{ notif.pesan }}</div>
+        <div class="section-sub" style="font-size:11px">{{ notif.dibuat_pada|timesince }} lalu</div>
+      </div>
+      {% if notif.laporan %}
+      <a href="{% url 'detail_laporan' notif.laporan.pk %}" style="font-size:12px;color:var(--teal);text-decoration:none;align-self:center;flex-shrink:0">Lihat &rarr;</a>
+      {% endif %}
+    </div>
+    {% empty %}
+    <div class="text-center py-5 section-sub">
+      <i class="bi bi-bell-slash fs-1 d-block mb-3"></i>
+      <p>Belum ada notifikasi.</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

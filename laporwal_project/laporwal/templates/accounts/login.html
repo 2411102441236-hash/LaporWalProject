@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}Masuk{% endblock %}
+{% block extra_css %}
+.auth-wrap { min-height: calc(100vh - 160px); display: flex; align-items: center; justify-content: center; padding: 44px 16px; }
+.auth-card { background: #fff; border: 1px solid var(--line); border-top: 3px solid var(--amber); border-radius: 10px; padding: 38px; width: 100%; max-width: 430px; }
+.auth-logo { text-align: center; margin-bottom: 24px; }
+.auth-icon { width: 54px; height: 54px; background: var(--teal-l); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; color: var(--teal); font-size: 26px; }
+.tab-switch { display: flex; background: #F1F4F4; border-radius: 7px; padding: 4px; margin-bottom: 22px; }
+.tab-btn { flex: 1; text-align: center; padding: 8px; border-radius: 5px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; background: transparent; color: var(--muted); text-decoration: none; transition: all 0.15s; }
+.tab-btn.active { background: #fff; color: var(--teal); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-icon"><i class="bi bi-geo-alt-fill"></i></div>
+      <div style="font-family:var(--display);font-weight:800;font-size:18px;color:var(--teal-d)">LaporWal</div>
+      <p class="section-sub" style="font-size:13px">Platform Pengaduan Infrastruktur Samarinda</p>
+    </div>
+    <div class="tab-switch">
+      <a href="{% url 'login' %}" class="tab-btn active">Masuk</a>
+      <a href="{% url 'register' %}" class="tab-btn">Daftar</a>
+    </div>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label">Username</label>
+        <input type="text" name="username" class="form-control w-100" placeholder="Masukkan username..." required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Password</label>
+        <input type="password" name="password" class="form-control w-100" placeholder="Masukkan password..." required>
+      </div>
+      {% if form.errors %}
+      <div class="alert alert-danger rounded-3 py-2 px-3 small mb-3">Username atau password salah. Coba lagi.</div>
+      {% endif %}
+      <button type="submit" class="btn-green w-100" style="padding:12px;font-size:15px">
+        <i class="bi bi-box-arrow-in-right"></i>Masuk
+      </button>
+    </form>
+    <p class="text-center section-sub mt-3 mb-0" style="font-size:13px">
+      Belum punya akun? <a href="{% url 'register' %}" class="text-green" style="font-weight:600;text-decoration:none">Daftar sekarang</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

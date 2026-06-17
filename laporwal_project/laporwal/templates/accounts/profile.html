@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}Profil Saya{% endblock %}
+{% block content %}
+<div style="max-width:600px;margin:0 auto;padding:28px 16px 48px">
+  <h1 class="h-page" style="margin-bottom:4px">Profil Saya</h1>
+  <p class="section-sub mb-4">Kelola informasi akun Anda</p>
+
+  <div class="lw-card" style="margin-bottom:16px">
+    <div class="d-flex align-items-center gap-3 mb-4 pb-4" style="border-bottom:1px solid var(--line)">
+      <div style="width:58px;height:58px;border-radius:10px;background:var(--teal);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff;font-family:var(--display)">
+        {{ user.get_initials }}
+      </div>
+      <div>
+        <div style="font-size:16px;font-weight:700">{{ user.get_full_name }}</div>
+        <div class="section-sub" style="font-size:13px">{{ user.email }}</div>
+        <div style="font-size:12px;color:var(--teal);margin-top:2px;font-weight:600">{{ user.laporan_count }} laporan dibuat</div>
+      </div>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+      <div class="row g-3">
+        <div class="col-6">
+          <label class="form-label">Nama Depan</label>
+          <input type="text" name="first_name" class="form-control w-100" value="{{ form.first_name.value|default:'' }}">
+        </div>
+        <div class="col-6">
+          <label class="form-label">Nama Belakang</label>
+          <input type="text" name="last_name" class="form-control w-100" value="{{ form.last_name.value|default:'' }}">
+        </div>
+        <div class="col-12">
+          <label class="form-label">Email</label>
+          <input type="email" name="email" class="form-control w-100" value="{{ form.email.value|default:'' }}">
+        </div>
+        <div class="col-6">
+          <label class="form-label">Nomor HP</label>
+          <input type="text" name="phone" class="form-control w-100" value="{{ form.phone.value|default:'' }}">
+        </div>
+        <div class="col-6">
+          <label class="form-label">Kota</label>
+          <input type="text" name="kota" class="form-control w-100" value="{{ form.kota.value|default:'' }}">
+        </div>
+      </div>
+      <div class="d-flex gap-2 mt-4">
+        <button type="submit" class="btn-green">Simpan Perubahan</button>
+        <a href="{% url 'dashboard_user' %}" class="btn-green-outline">Kembali</a>
+      </div>
+    </form>
+  </div>
+
+  <div class="lw-card">
+    <div class="ctitle" style="margin-bottom:12px">Aksi Lain</div>
+    <a href="{% url 'riwayat_laporan' %}" style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:7px;text-decoration:none;color:inherit;transition:background 0.15s" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='transparent'">
+      <div style="width:36px;height:36px;background:var(--st-proc-bg);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--st-proc-tx)"><i class="bi bi-clock-history"></i></div>
+      <div><div style="font-size:13px;font-weight:600">Riwayat Laporan</div><div class="section-sub" style="font-size:11px">Lihat semua laporan selesai</div></div>
+      <i class="bi bi-chevron-right ms-auto" style="font-size:12px;color:var(--muted)"></i>
+    </a>
+    <a href="{% url 'notifikasi' %}" style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:7px;text-decoration:none;color:inherit;transition:background 0.15s" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='transparent'">
+      <div style="width:36px;height:36px;background:var(--st-wait-bg);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--st-wait-tx)"><i class="bi bi-bell"></i></div>
+      <div><div style="font-size:13px;font-weight:600">Notifikasi</div><div class="section-sub" style="font-size:11px">Kelola notifikasi laporan</div></div>
+      <i class="bi bi-chevron-right ms-auto" style="font-size:12px;color:var(--muted)"></i>
+    </a>
+    <a href="{% url 'logout' %}" style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:7px;text-decoration:none;color:#dc3545;transition:background 0.15s" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='transparent'">
+      <div style="width:36px;height:36px;background:var(--st-rej-bg);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--st-rej-tx)"><i class="bi bi-box-arrow-right"></i></div>
+      <div><div style="font-size:13px;font-weight:600">Keluar</div><div class="section-sub" style="font-size:11px">Logout dari akun ini</div></div>
+    </a>
+  </div>
+</div>
+{% endblock %}

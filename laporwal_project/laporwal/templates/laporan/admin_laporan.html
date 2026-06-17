@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% block title %}Manajemen Laporan{% endblock %}
+{% block extra_css %}
+.admin-wrap { max-width: 1100px; margin: 0 auto; padding: 28px 16px 48px; }
+{% endblock %}
+{% block content %}
+<div class="admin-wrap">
+  <div class="mb-4">
+    <h1 class="h-page" style="margin-bottom:2px">Manajemen Laporan</h1>
+    <p class="section-sub mb-0">Kelola dan tindak lanjuti semua laporan warga</p>
+  </div>
+
+  <!-- FILTER -->
+  <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+    <div class="d-flex gap-2 flex-wrap">
+      <a href="{% url 'admin_laporan' %}{% if kategori_filter %}?kategori={{ kategori_filter }}{% endif %}" class="filter-chip {% if not status_filter %}active{% endif %}">Semua</a>
+      <a href="?status=pending{% if kategori_filter %}&kategori={{ kategori_filter }}{% endif %}{% if search %}&q={{ search }}{% endif %}" class="filter-chip {% if status_filter == 'pending' %}active{% endif %}">Menunggu</a>
+      <a href="?status=diproses{% if kategori_filter %}&kategori={{ kategori_filter }}{% endif %}{% if search %}&q={{ search }}{% endif %}" class="filter-chip {% if status_filter == 'diproses' %}active{% endif %}">Diproses</a>
+      <a href="?status=selesai{% if kategori_filter %}&kategori={{ kategori_filter }}{% endif %}{% if search %}&q={{ search }}{% endif %}" class="filter-chip {% if status_filter == 'selesai' %}active{% endif %}">Selesai</a>
+      <span style="color:var(--line)">|</span>
+      <a href="{% url 'admin_laporan' %}{% if status_filter %}?status={{ status_filter }}{% endif %}" class="filter-chip {% if not kategori_filter %}active{% endif %}">Semua Kategori</a>
+      <a href="?kategori=jalan{% if status_filter %}&status={{ status_filter }}{% endif %}" class="filter-chip {% if kategori_filter == 'jalan' %}active{% endif %}"><i class="bi bi-cone-striped" style="color:var(--kat-jalan)"></i> Jalan</a>
+      <a href="?kategori=sampah{% if status_filter %}&status={{ status_filter }}{% endif %}" class="filter-chip {% if kategori_filter == 'sampah' %}active{% endif %}"><i class="bi bi-trash" style="color:var(--kat-sampah)"></i> Sampah</a>
+      <a href="?kategori=lampu{% if status_filter %}&status={{ status_filter }}{% endif %}" class="filter-chip {% if kategori_filter == 'lampu' %}active{% endif %}"><i class="bi bi-lightbulb" style="color:var(--kat-lampu)"></i> Lampu</a>
+    </div>
+    <form method="get" class="ms-auto d-flex gap-2">
+      {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
+      {% if kategori_filter %}<input type="hidden" name="kategori" value="{{ kategori_filter }}">{% endif %}
+      <input type="text" name="q" value="{{ search }}" placeholder="Cari laporan..." style="border:1.5px solid var(--line);border-radius:6px;padding:7px 13px;font-size:13px;width:190px">
+      <button type="submit" class="btn-teal" style="padding:8px 13px"><i class="bi bi-search"></i></button>
+    </form>
+  </div>
+
+  <!-- TABLE -->
+  <div class="lw-card" style="padding:0;overflow:hidden">
+    <table class="tbl">
+      <thead>
+        <tr><th>Nomor</th><th>Deskripsi</th><th>Kategori</th><th>Status</th><th>Prioritas</th><th>Pelapor</th><th>Tanggal</th><th>Aksi</th></tr>
+      </thead>
+      <tbody>
+        {% for lap in laporan_list %}
+        <tr>
+          <td class="nomor">{{ lap.nomor_laporan }}</td>
+          <td style="max-width:220px">
+            <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;max-width:220px;font-size:12.5px">{{ lap.deskripsi }}</span>
+            <span class="section-sub" style="font-size:10px">{{ lap.alamat|truncatechars:40 }}</span>
+          </td>
+          <td><span class="badge-{{ lap.kategori }}">{{ lap.get_kategori_display }}</span></td>
+          <td><span class="badge-{{ lap.status }}">{{ lap.get_status_display }}</span></td>
+          <td>
+            <span style="display:inline-flex;align-items:center;font-size:10.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;padding:3px 8px;border-radius:4px;background:{% if lap.prioritas == 'darurat' %}#16242A;color:#fff{% elif lap.prioritas == 'tinggi' %}#FEE2E2;color:#991B1B{% elif lap.prioritas == 'sedang' %}#FEF3C7;color:#92400E{% else %}#D1FAE5;color:#065F46{% endif %}">
+              {{ lap.get_prioritas_display }}
+            </span>
+          </td>
+          <td style="font-size:11.5px">{{ lap.pelapor.get_full_name }}</td>
+          <td style="font-size:11.5px;color:var(--muted)">{{ lap.dibuat_pada|date:"d M Y" }}</td>
+          <td><a href="{% url 'admin_detail_laporan' lap.pk %}" class="btn-teal" style="padding:5px 11px;font-size:12px">Detail</a></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8" class="text-center section-sub py-5"><i class="bi bi-inbox d-block fs-2 mb-2"></i>Tidak ada laporan ditemukan.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% if laporan_list.has_other_pages %}
+    <div class="d-flex align-items-center justify-content-between px-4 py-3" style="border-top:1px solid var(--line)">
+      <span class="section-sub" style="font-size:12px">Halaman {{ laporan_list.number }} dari {{ laporan_list.paginator.num_pages }}</span>
+      <nav>
+        <ul class="pagination pagination-sm mb-0">
+          {% if laporan_list.has_previous %}
+          <li class="page-item"><a class="page-link" href="?page={{ laporan_list.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search %}&q={{ search }}{% endif %}">&laquo;</a></li>
+          {% endif %}
+          {% for num in laporan_list.paginator.page_range %}
+          <li class="page-item {% if num == laporan_list.number %}active{% endif %}"><a class="page-link" href="?page={{ num }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search %}&q={{ search }}{% endif %}">{{ num }}</a></li>
+          {% endfor %}
+          {% if laporan_list.has_next %}
+          <li class="page-item"><a class="page-link" href="?page={{ laporan_list.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search %}&q={{ search }}{% endif %}">&raquo;</a></li>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

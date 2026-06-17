@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}LaporWal{% endblock %} — Lapor Infrastruktur Samarinda</title>
+  {% load static %}
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --teal:#0E4C5A; --teal-d:#093843; --teal-l:#E3EFF1; --teal-line:#CFE0E3;
+      --amber:#F4A300; --amber-d:#D38E00;
+      --ink:#16242A; --muted:#5C6B70; --line:#DDE6E8; --bg:#F4F7F7;
+      --display:'Archivo',sans-serif; --body:'Inter',sans-serif;
+      /* status */
+      --st-wait-bg:#FEF3C7; --st-wait-tx:#92400E;
+      --st-proc-bg:#DBEAFE; --st-proc-tx:#1E40AF;
+      --st-done-bg:#D1FAE5; --st-done-tx:#065F46;
+      --st-rej-bg:#FEE2E2;  --st-rej-tx:#991B1B;
+      /* kategori */
+      --kat-jalan:#2563EB; --kat-sampah:#16A34A; --kat-lampu:#D97706; --kat-lain:#64748B;
+      /* kompat lama */
+      --green-primary:#0E4C5A; --green-dark:#093843; --green-darker:#093843; --green-light:#E3EFF1; --green-pale:#F4F7F7;
+    }
+    * { box-sizing: border-box; }
+    body { font-family: var(--body); background: var(--bg); color: var(--ink); }
+
+    /* ===== NAVBAR ===== */
+    .lw-navbar { background: var(--teal); padding: 0 26px; height: 62px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+    .lw-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .lw-brand-icon { width: 36px; height: 36px; background: var(--amber); border-radius: 7px; display: flex; align-items: center; justify-content: center; color: var(--teal-d); font-size: 19px; }
+    .lw-brand-text { font-family: var(--display); font-size: 18px; font-weight: 800; color: #fff; letter-spacing: -.4px; }
+    .lw-brand-text b { color: var(--amber); font-weight: 800; }
+    .lw-nav-links { display: flex; gap: 4px; align-items: center; }
+    .lw-nav-link { padding: 8px 13px; border-radius: 6px; font-size: 13.5px; font-weight: 500; color: #cfe0e3; text-decoration: none; border: none; background: transparent; cursor: pointer; transition: all 0.15s; display:inline-flex; align-items:center; gap:6px; }
+    .lw-nav-link:hover, .lw-nav-link.active { background: rgba(255,255,255,.1); color: #fff; }
+    .lw-nav-link.btn-cta { background: var(--amber); color: var(--teal-d); font-weight: 700; }
+    .lw-nav-link.btn-cta:hover { background: var(--amber-d); color: var(--teal-d); }
+    .notif-badge { background: var(--amber); color: var(--teal-d); font-size: 9px; font-weight: 800; padding: 1px 5px; border-radius: 10px; margin-left: 1px; vertical-align: top; }
+
+    /* ===== CARDS ===== */
+    .lw-card { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 22px; }
+    .card-amber { border-top: 3px solid var(--amber); }
+
+    /* ===== TYPE HELPERS ===== */
+    .h-page { font-family: var(--display); font-weight: 800; font-size: 24px; letter-spacing: -.5px; color: var(--teal-d); }
+    .ctitle { font-family: var(--display); font-weight: 700; font-size: 15px; color: var(--ink); }
+    .section-title { font-family: var(--display); font-size: 20px; font-weight: 800; color: var(--ink); letter-spacing:-.3px; }
+    .section-sub { font-size: 14px; color: var(--muted); }
+    .text-green { color: var(--teal) !important; }
+    .bg-green-pale { background: var(--bg) !important; }
+
+    /* ===== STATUS BADGES (kotak, resmi) ===== */
+    .badge-pending,.badge-diproses,.badge-selesai,.badge-ditolak,
+    .badge-jalan,.badge-sampah,.badge-lampu,.badge-lainnya {
+      display:inline-flex; align-items:center; gap:5px;
+      font-size:10.5px; font-weight:700; letter-spacing:.4px; text-transform:uppercase;
+      padding:3px 8px; border-radius:4px !important;
+    }
+    .badge-pending { background: var(--st-wait-bg); color: var(--st-wait-tx); }
+    .badge-diproses { background: var(--st-proc-bg); color: var(--st-proc-tx); }
+    .badge-selesai { background: var(--st-done-bg); color: var(--st-done-tx); }
+    .badge-ditolak { background: var(--st-rej-bg); color: var(--st-rej-tx); }
+    /* kategori chips */
+    .badge-jalan { background:#EFF4FE; color:var(--kat-jalan); text-transform:none; letter-spacing:0; }
+    .badge-sampah { background:#EDFAF1; color:var(--kat-sampah); text-transform:none; letter-spacing:0; }
+    .badge-lampu { background:#FEF6EC; color:var(--kat-lampu); text-transform:none; letter-spacing:0; }
+    .badge-lainnya { background:#F1F4F6; color:var(--kat-lain); text-transform:none; letter-spacing:0; }
+
+    /* ===== BUTTONS ===== */
+    .btn-green { background: var(--amber); color: var(--teal-d); border: none; border-radius: 6px; padding: 10px 20px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.15s; display:inline-flex; align-items:center; gap:7px; justify-content:center; }
+    .btn-green:hover { background: var(--amber-d); color: var(--teal-d); }
+    .btn-teal { background: var(--teal); color: #fff; border: none; border-radius: 6px; padding: 10px 20px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s; display:inline-flex; align-items:center; gap:7px; justify-content:center; text-decoration:none; }
+    .btn-teal:hover { background: var(--teal-d); color: #fff; }
+    .btn-green-outline { background: #fff; color: var(--teal); border: 1.5px solid var(--line); border-radius: 6px; padding: 9px 18px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s; text-decoration: none; display: inline-flex; align-items:center; gap:7px; }
+    .btn-green-outline:hover { background: var(--teal-l); color: var(--teal); border-color: var(--teal-line); }
+
+    /* ===== FORMS ===== */
+    .form-control, .form-select { border: 1.5px solid var(--line); border-radius: 6px; padding: 11px 13px; font-size: 14px; transition: border-color 0.15s; }
+    .form-control:focus, .form-select:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(14,76,90,0.1); }
+    .form-label { font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+
+    /* ===== TABLE (admin) ===== */
+    .tbl { width: 100%; border-collapse: collapse; }
+    .tbl th { font-size: 10.5px; font-weight: 700; letter-spacing:.4px; text-transform:uppercase; color: var(--muted); padding: 11px 13px; text-align: left; border-bottom: 2px solid var(--line); white-space: nowrap; }
+    .tbl td { font-size: 12.5px; padding: 12px 13px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+    .tbl tr:last-child td { border-bottom: none; }
+    .tbl tr:hover td { background: #FAFCFC; }
+    .tbl .nomor { font-family: var(--display); font-weight: 700; color: var(--teal); font-size: 11.5px; }
+
+    /* ===== FILTER CHIP ===== */
+    .filter-chip { padding: 6px 13px; border-radius: 6px; font-size: 12px; font-weight: 600; border: 1px solid var(--line); background: #fff; color: var(--muted); text-decoration: none; transition: all 0.15s; cursor:pointer; }
+    .filter-chip:hover, .filter-chip.active { background: var(--teal-l); color: var(--teal); border-color: var(--teal-line); }
+
+    /* ===== PAGINATION (bootstrap override) ===== */
+    .page-link { color: var(--teal); border-radius:5px; border-color: var(--line); }
+    .page-item.active .page-link { background: var(--teal); border-color: var(--teal); }
+
+    /* ===== TOAST ===== */
+    .lw-toast-container { position: fixed; top: 74px; right: 20px; z-index: 9999; }
+
+    /* ===== FOOTER ===== */
+    .lw-footer { background: var(--teal-d); color: rgba(255,255,255,0.55); text-align: center; padding: 18px; font-size: 13px; margin-top: 48px; }
+    .lw-footer b, .lw-footer span { color: var(--amber); font-weight: 700; }
+
+    {% block extra_css %}{% endblock %}
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="lw-navbar">
+  <a href="{% url 'beranda' %}" class="lw-brand">
+    <div class="lw-brand-icon"><i class="bi bi-geo-alt-fill"></i></div>
+    <span class="lw-brand-text">Lapor<b>Wal</b></span>
+  </a>
+
+  <div class="lw-nav-links">
+    {% if user.is_authenticated %}
+      {% if user.is_admin_dinas or user.is_staff %}
+        <a href="{% url 'admin_dashboard' %}" class="lw-nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}"><i class="bi bi-speedometer2"></i>Dashboard</a>
+        <a href="{% url 'admin_laporan' %}" class="lw-nav-link {% if request.resolver_match.url_name == 'admin_laporan' %}active{% endif %}"><i class="bi bi-clipboard-data"></i>Laporan</a>
+        <a href="{% url 'admin_pengguna' %}" class="lw-nav-link {% if request.resolver_match.url_name == 'admin_pengguna' %}active{% endif %}"><i class="bi bi-people"></i>Pengguna</a>
+      {% else %}
+        <a href="{% url 'beranda' %}" class="lw-nav-link {% if request.resolver_match.url_name == 'beranda' %}active{% endif %}">Beranda</a>
+        <a href="{% url 'buat_laporan' %}" class="lw-nav-link {% if request.resolver_match.url_name == 'buat_laporan' %}active{% endif %}">Buat Laporan</a>
+        <a href="{% url 'dashboard_user' %}" class="lw-nav-link {% if request.resolver_match.url_name == 'dashboard_user' %}active{% endif %}">Dashboard</a>
+        <a href="{% url 'riwayat_laporan' %}" class="lw-nav-link {% if request.resolver_match.url_name == 'riwayat_laporan' %}active{% endif %}">Riwayat</a>
+        <a href="{% url 'notifikasi' %}" class="lw-nav-link {% if request.resolver_match.url_name == 'notifikasi' %}active{% endif %}">
+          <i class="bi bi-bell"></i>
+          <span id="notif-badge-count" class="notif-badge d-none">0</span>
+        </a>
+      {% endif %}
+      <div class="dropdown ms-2">
+        <button class="lw-nav-link dropdown-toggle d-flex align-items-center gap-2" data-bs-toggle="dropdown">
+          <div style="width:30px;height:30px;background:rgba(255,255,255,.15);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;font-family:var(--display)">
+            {{ user.get_initials }}
+          </div>
+          <span class="d-none d-md-inline">{{ user.first_name|default:user.username }}</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" style="border-radius:10px;overflow:hidden">
+          {% if not user.is_admin_dinas and not user.is_staff %}
+          <li><a class="dropdown-item" href="{% url 'profil' %}"><i class="bi bi-person me-2 text-green"></i>Profil Saya</a></li>
+          <li><hr class="dropdown-divider my-1"></li>
+          {% endif %}
+          <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="bi bi-box-arrow-right me-2"></i>Keluar</a></li>
+        </ul>
+      </div>
+    {% else %}
+      <a href="{% url 'beranda' %}" class="lw-nav-link {% if request.resolver_match.url_name == 'beranda' %}active{% endif %}">Beranda</a>
+      <a href="{% url 'login' %}" class="lw-nav-link {% if request.resolver_match.url_name == 'login' %}active{% endif %}">Masuk</a>
+      <a href="{% url 'register' %}" class="lw-nav-link btn-cta">Daftar Gratis</a>
+    {% endif %}
+  </div>
+</nav>
+
+<!-- TOAST MESSAGES -->
+<div class="lw-toast-container">
+  {% for msg in messages %}
+  <div class="toast show align-items-center text-white bg-{% if msg.tags == 'error' %}danger{% elif msg.tags == 'success' %}success{% elif msg.tags == 'warning' %}warning text-dark{% else %}info{% endif %} border-0 mb-2" style="border-radius:8px;min-width:280px" role="alert">
+    <div class="d-flex">
+      <div class="toast-body" style="font-size:14px;font-weight:500">{{ msg }}</div>
+      <button type="button" class="btn-close btn-close-{% if msg.tags == 'warning' %}{% else %}white{% endif %} me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- CONTENT -->
+{% block content %}{% endblock %}
+
+<!-- FOOTER -->
+<footer class="lw-footer">
+  <b>LaporWal</b> &mdash; Platform Pengaduan Infrastruktur Kota Samarinda &copy; 2026
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.querySelectorAll('.toast').forEach(function(t){
+  setTimeout(function(){ new bootstrap.Toast(t).hide(); }, 4000);
+});
+{% if user.is_authenticated and not user.is_admin_dinas and not user.is_staff %}
+fetch('/api/notif-count/').then(r => r.json()).then(d => {
+  var badge = document.getElementById('notif-badge-count');
+  if(d.count > 0 && badge){
+    badge.textContent = d.count;
+    badge.classList.remove('d-none');
+  }
+});
+{% endif %}
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

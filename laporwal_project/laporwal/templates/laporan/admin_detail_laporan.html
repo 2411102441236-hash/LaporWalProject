@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% block title %}Detail Laporan Admin{% endblock %}
+{% block extra_css %}
+.admin-wrap { max-width: 1000px; margin: 0 auto; padding: 28px 16px 48px; }
+.meta-item { background: var(--bg); border-radius: 7px; padding: 11px 13px; }
+.meta-lbl { font-size: 11px; color: var(--muted); margin-bottom: 3px; }
+.meta-val { font-size: 13px; font-weight: 600; color: var(--ink); }
+.timeline .tl-item { display: flex; gap: 12px; padding-bottom: 14px; }
+.timeline .tl-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+.act-btn { padding: 10px 20px; border-radius: 6px; font-size: 14px; font-weight: 600; border: none; cursor: pointer; transition: all 0.15s; display:flex; align-items:center; justify-content:center; gap:8px; }
+.act-btn.green { background: var(--teal); color: #fff; }
+.act-btn.green:hover { background: var(--teal-d); }
+.act-btn.blue { background: #1E40AF; color: #fff; }
+.act-btn.blue:hover { background: #18347f; }
+.act-btn.red { background: #dc3545; color: #fff; }
+.act-btn.red:hover { background: #b91c1c; }
+.act-btn.amber { background: var(--amber); color: var(--teal-d); }
+.act-btn.amber:hover { background: var(--amber-d); }
+{% endblock %}
+{% block content %}
+<div class="admin-wrap">
+  <div class="d-flex align-items-center gap-2 mb-3">
+    <a href="{% url 'admin_laporan' %}" class="section-sub text-decoration-none" style="font-size:13px"><i class="bi bi-arrow-left me-1"></i>Kembali ke Daftar</a>
+    <span class="section-sub">/</span>
+    <span style="font-size:13px;font-weight:700;color:var(--teal);font-family:var(--display)">{{ laporan.nomor_laporan }}</span>
+  </div>
+
+  <div class="row g-3">
+    <!-- KIRI -->
+    <div class="col-md-7">
+      <div class="lw-card mb-3">
+        {% if laporan.foto %}
+        <img src="{{ laporan.foto.url }}" style="width:100%;max-height:280px;object-fit:cover;border-radius:8px;margin-bottom:14px" alt="Foto laporan">
+        {% else %}
+        <div style="width:100%;height:180px;background:var(--bg);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:54px;color:{{ laporan.get_kategori_warna }};margin-bottom:14px"><i class="bi {{ laporan.get_kategori_icon }}"></i></div>
+        {% endif %}
+        <h2 style="font-family:var(--display);font-weight:700;font-size:18px;margin-bottom:8px">{{ laporan.deskripsi }}</h2>
+        <p class="section-sub mb-3" style="font-size:13px"><i class="bi bi-geo-alt me-1 text-green"></i>{{ laporan.alamat }}</p>
+        <div class="d-flex gap-2 flex-wrap">
+          <span class="badge-{{ laporan.kategori }}">{{ laporan.get_kategori_display }}</span>
+          <span class="badge-{{ laporan.status }}">{{ laporan.get_status_display }}</span>
+        </div>
+      </div>
+
+      <div class="lw-card mb-3">
+        <div class="ctitle mb-3">Detail Informasi</div>
+        <div class="row g-2">
+          <div class="col-6"><div class="meta-item"><div class="meta-lbl">Nomor Laporan</div><div class="meta-val">{{ laporan.nomor_laporan }}</div></div></div>
+          <div class="col-6"><div class="meta-item"><div class="meta-lbl">Tanggal Lapor</div><div class="meta-val">{{ laporan.dibuat_pada|date:"d M Y H:i" }}</div></div></div>
+          <div class="col-6"><div class="meta-item"><div class="meta-lbl">Pelapor</div><div class="meta-val">{{ laporan.pelapor.get_full_name }}</div></div></div>
+          <div class="col-6"><div class="meta-item"><div class="meta-lbl">Email</div><div class="meta-val" style="font-size:12px">{{ laporan.pelapor.email }}</div></div></div>
+          {% if laporan.latitude %}<div class="col-12"><div class="meta-item"><div class="meta-lbl">Koordinat GPS</div><div class="meta-val">{{ laporan.latitude }}, {{ laporan.longitude }}</div></div></div>{% endif %}
+        </div>
+      </div>
+
+      <div class="lw-card">
+        <div class="ctitle mb-3">Riwayat Aktivitas</div>
+        <div class="timeline">
+          {% for akt in aktivitas %}
+          <div class="tl-item">
+            <div class="tl-dot" style="background:{% if akt.warna == 'danger' %}#dc3545{% elif akt.warna == 'info' %}#1E40AF{% elif akt.warna == 'success' %}#0E4C5A{% elif akt.warna == 'warning' %}#D97706{% else %}#6b7280{% endif %}"></div>
+            <div>
+              <div style="font-size:13px;font-weight:500">{{ akt.deskripsi }}</div>
+              <div class="section-sub" style="font-size:11px">{{ akt.dibuat_pada|date:"d M Y · H:i" }}{% if akt.oleh %} · {{ akt.oleh.get_full_name }}{% endif %}</div>
+            </div>
+          </div>
+          {% empty %}<p class="section-sub small">Belum ada aktivitas.</p>{% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- KANAN: AKSI -->
+    <div class="col-md-5">
+      <div class="lw-card card-amber" style="position:sticky;top:74px">
+        <div class="ctitle mb-3">Tindak Lanjut Laporan</div>
+        <form method="post">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label">Status Laporan</label>
+            <select name="status" class="form-select w-100">
+              {% for val, label in form.fields.status.choices %}
+              <option value="{{ val }}" {% if val == laporan.status %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Tingkat Prioritas</label>
+            <select name="prioritas" class="form-select w-100">
+              {% for val, label in form.fields.prioritas.choices %}
+              <option value="{{ val }}" {% if val == laporan.prioritas %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-4">
+            <label class="form-label">Catatan Admin <span class="section-sub">(opsional)</span></label>
+            <textarea name="catatan_admin" class="form-control w-100" rows="3" placeholder="Tambahkan catatan untuk pelapor...">{{ laporan.catatan_admin }}</textarea>
+          </div>
+          <div class="d-grid gap-2">
+            <button type="submit" class="act-btn amber"><i class="bi bi-check-circle"></i>Simpan Perubahan</button>
+          </div>
+        </form>
+
+        <hr style="border-color:var(--line);margin:16px 0">
+
+        <div class="ctitle mb-2" style="font-size:13px">Aksi Cepat</div>
+        <form method="post" class="d-grid gap-2">
+          {% csrf_token %}
+          <input type="hidden" name="catatan_admin" value="{{ laporan.catatan_admin }}">
+          <input type="hidden" name="prioritas" value="{{ laporan.prioritas }}">
+          <button type="submit" name="status" value="diproses" class="act-btn blue"><i class="bi bi-arrow-repeat"></i>Tandai Sedang Diproses</button>
+          <button type="submit" name="status" value="selesai" class="act-btn green"><i class="bi bi-check-all"></i>Tandai Selesai</button>
+          <button type="submit" name="status" value="ditolak" class="act-btn red"><i class="bi bi-x-circle"></i>Tolak Laporan</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

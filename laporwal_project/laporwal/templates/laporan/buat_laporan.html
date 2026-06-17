@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% block title %}Buat Laporan{% endblock %}
+{% block extra_css %}
+.form-wrap { max-width: 680px; margin: 0 auto; padding: 30px 16px 48px; }
+.form-section { background: #fff; border: 1px solid var(--line); border-top: 3px solid var(--amber); border-radius: 8px; padding: 24px; margin-bottom: 18px; }
+.form-section-title { font-family: var(--display); font-size: 15px; font-weight: 700; color: var(--ink); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.form-section-title i { color: var(--amber-d); }
+.upload-zone { border: 2px dashed var(--teal-line); border-radius: 8px; padding: 30px; text-align: center; background: var(--teal-l); cursor: pointer; transition: all 0.15s; }
+.upload-zone:hover, .upload-zone.dragover { background: #D4ECEF; border-color: var(--teal); }
+.upload-zone-icon { width: 46px; height: 46px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; color: var(--teal); font-size: 20px; }
+.category-chips { display: flex; gap: 10px; flex-wrap: wrap; }
+.cat-chip { display:flex; align-items:center; gap:8px; padding: 9px 15px; border-radius: 6px; font-size: 13px; font-weight: 600; border: 1.5px solid var(--line); cursor: pointer; transition: all 0.15s; background: #fff; color: var(--muted); }
+.cat-chip:hover { border-color: var(--teal-line); }
+.cat-chip.selected { background: var(--teal); color: #fff; border-color: var(--teal); }
+.gps-bar { display: flex; align-items: center; gap: 11px; padding: 12px 14px; background: var(--teal-l); border-radius: 7px; border: 1px solid var(--teal-line); }
+.gps-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--teal); flex-shrink: 0; }
+#preview-img { display: none; width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-top: 12px; }
+{% endblock %}
+{% block content %}
+<div class="form-wrap">
+  <div class="mb-3">
+    <h1 class="h-page">Buat Laporan Baru</h1>
+    <p class="section-sub">Laporkan masalah infrastruktur di lingkungan Anda</p>
+  </div>
+
+  <form method="post" enctype="multipart/form-data" id="laporan-form" novalidate>
+    {% csrf_token %}
+    <input type="hidden" name="latitude" id="lat-input">
+    <input type="hidden" name="longitude" id="lng-input">
+
+    <!-- FOTO -->
+    <div class="form-section">
+      <div class="form-section-title"><i class="bi bi-camera"></i>Foto Kerusakan</div>
+      <div class="upload-zone" id="upload-zone" onclick="document.getElementById('foto-input').click()">
+        <div class="upload-zone-icon"><i class="bi bi-cloud-arrow-up"></i></div>
+        <p class="mb-1" style="font-size:14px;font-weight:600;color:var(--ink)">Klik untuk upload foto</p>
+        <p class="section-sub mb-2" style="font-size:12px">atau drag &amp; drop gambar di sini</p>
+        <span class="btn-green-outline" style="font-size:12px;padding:6px 14px">Pilih File</span>
+        <p class="section-sub mt-2 mb-0" style="font-size:11px">JPG, PNG — maks. 10MB</p>
+      </div>
+      <input type="file" id="foto-input" name="foto" accept="image/*" class="d-none" required>
+      <img id="preview-img" alt="Preview foto">
+      {% if form.foto.errors %}<div class="text-danger small mt-1">{{ form.foto.errors }}</div>{% endif %}
+    </div>
+
+    <!-- KATEGORI -->
+    <div class="form-section">
+      <div class="form-section-title"><i class="bi bi-tag"></i>Kategori Laporan</div>
+      <div class="category-chips mb-2">
+        <button type="button" class="cat-chip" data-val="jalan"><i class="bi bi-cone-striped"></i> Jalan Rusak</button>
+        <button type="button" class="cat-chip" data-val="sampah"><i class="bi bi-trash"></i> Tumpukan Sampah</button>
+        <button type="button" class="cat-chip" data-val="lampu"><i class="bi bi-lightbulb"></i> Lampu Jalan Mati</button>
+        <button type="button" class="cat-chip" data-val="lainnya"><i class="bi bi-three-dots"></i> Lainnya</button>
+      </div>
+      <input type="hidden" name="kategori" id="kategori-input" value="lainnya">
+      <p class="section-sub mb-0" style="font-size:11px"><i class="bi bi-info-circle me-1"></i>Pilih kategori yang paling sesuai dengan laporan Anda</p>
+    </div>
+
+    <!-- DESKRIPSI -->
+    <div class="form-section">
+      <div class="form-section-title"><i class="bi bi-chat-text"></i>Deskripsi Masalah</div>
+      <div class="mb-3">
+        <label class="form-label">Jelaskan masalah yang Anda temukan *</label>
+        <textarea name="deskripsi" class="form-control w-100" rows="4" placeholder="Contoh: Jalan berlubang besar berdiameter ±1 meter di depan pasar, berbahaya untuk kendaraan roda dua..." required>{{ form.deskripsi.value|default:'' }}</textarea>
+        {% if form.deskripsi.errors %}<div class="text-danger small mt-1">{{ form.deskripsi.errors }}</div>{% endif %}
+      </div>
+    </div>
+
+    <!-- LOKASI -->
+    <div class="form-section">
+      <div class="form-section-title"><i class="bi bi-geo-alt"></i>Lokasi Kejadian</div>
+      <div class="gps-bar mb-3">
+        <div class="gps-dot"></div>
+        <div style="flex:1">
+          <div style="font-size:13px;color:var(--ink)" id="gps-status">Klik tombol untuk deteksi lokasi otomatis</div>
+          <div style="font-size:11px;font-weight:700;color:var(--teal)" id="gps-coord"></div>
+        </div>
+        <button type="button" class="btn-teal" style="padding:7px 13px;font-size:12px" onclick="getLocation()">
+          <i class="bi bi-crosshair"></i>Deteksi GPS
+        </button>
+      </div>
+      <label class="form-label">Alamat / Nama Lokasi *</label>
+      <input type="text" name="alamat" class="form-control w-100" placeholder="Contoh: Jl. Pattimura No. 5 RT 03, Kel. Bugis, Samarinda Kota" required value="{{ form.alamat.value|default:'' }}">
+      {% if form.alamat.errors %}<div class="text-danger small mt-1">{{ form.alamat.errors }}</div>{% endif %}
+    </div>
+
+    <!-- SUBMIT -->
+    <button type="submit" class="btn-green w-100" style="padding:14px;font-size:16px">
+      <i class="bi bi-send"></i>Kirim Laporan
+    </button>
+    <a href="{% url 'beranda' %}" class="d-block text-center section-sub mt-3" style="font-size:13px;text-decoration:none">Batal, kembali ke beranda</a>
+  </form>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+// Upload preview
+document.getElementById('foto-input').addEventListener('change', function(e) {
+  if(e.target.files[0]) {
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      var img = document.getElementById('preview-img');
+      img.src = ev.target.result;
+      img.style.display = 'block';
+      document.getElementById('upload-zone').style.display = 'none';
+    };
+    reader.readAsDataURL(e.target.files[0]);
+  }
+});
+
+// Drag & drop
+var zone = document.getElementById('upload-zone');
+zone.addEventListener('dragover', function(e){ e.preventDefault(); zone.classList.add('dragover'); });
+zone.addEventListener('dragleave', function(){ zone.classList.remove('dragover'); });
+zone.addEventListener('drop', function(e){
+  e.preventDefault(); zone.classList.remove('dragover');
+  var file = e.dataTransfer.files[0];
+  if(file && file.type.startsWith('image/')) {
+    document.getElementById('foto-input').files = e.dataTransfer.files;
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      var img = document.getElementById('preview-img');
+      img.src = ev.target.result; img.style.display = 'block';
+      zone.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
+});
+
+// Category chips
+document.querySelectorAll('.cat-chip').forEach(function(chip){
+  chip.addEventListener('click', function(){
+    document.querySelectorAll('.cat-chip').forEach(function(c){ c.classList.remove('selected'); });
+    this.classList.add('selected');
+    document.getElementById('kategori-input').value = this.dataset.val;
+  });
+});
+// Set default chip
+document.querySelector('.cat-chip[data-val="lainnya"]').classList.add('selected');
+
+// GPS detection
+function getLocation() {
+  if(!navigator.geolocation) {
+    alert('Browser Anda tidak mendukung GPS.');
+    return;
+  }
+  document.getElementById('gps-status').textContent = 'Mendeteksi lokasi...';
+  navigator.geolocation.getCurrentPosition(function(pos){
+    var lat = pos.coords.latitude.toFixed(6);
+    var lng = pos.coords.longitude.toFixed(6);
+    document.getElementById('lat-input').value = lat;
+    document.getElementById('lng-input').value = lng;
+    document.getElementById('gps-status').textContent = 'Lokasi berhasil terdeteksi';
+    document.getElementById('gps-coord').textContent = lat + ', ' + lng;
+  }, function(){
+    document.getElementById('gps-status').textContent = 'Gagal mendeteksi GPS. Isi alamat manual.';
+  });
+}
+</script>
+{% endblock %}

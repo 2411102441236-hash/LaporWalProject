@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% block title %}Detail Laporan {{ laporan.nomor_laporan }}{% endblock %}
+{% block extra_css %}
+.detail-wrap { max-width: 800px; margin: 0 auto; padding: 26px 16px 48px; }
+.detail-card { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 22px; margin-bottom: 14px; }
+.detail-photo { width: 100%; max-height: 300px; object-fit: cover; border-radius: 8px; }
+.meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.meta-item { background: var(--bg); border-radius: 7px; padding: 11px 13px; }
+.meta-lbl { font-size: 11px; color: var(--muted); margin-bottom: 3px; }
+.meta-val { font-size: 13px; font-weight: 600; color: var(--ink); }
+.progress-steps { display: flex; gap: 0; }
+.step { flex: 1; text-align: center; position: relative; }
+.step::before { content: ''; position: absolute; top: 15px; left: 50%; right: -50%; height: 2px; background: var(--line); z-index: 0; }
+.step:last-child::before { display: none; }
+.step-dot { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; border: 2px solid var(--line); background: #fff; position: relative; z-index: 1; font-size: 13px; color: var(--muted); }
+.step.done .step-dot { background: var(--teal); border-color: var(--teal); color: #fff; }
+.step.done::before { background: var(--teal); }
+.step.active .step-dot { background: var(--amber); border-color: var(--amber); color: var(--teal-d); }
+.step-lbl { font-size: 11px; color: var(--muted); }
+.step.done .step-lbl, .step.active .step-lbl { font-weight: 700; color: var(--ink); }
+.tl-item { display: flex; gap: 13px; padding-bottom: 15px; }
+.tl-item:last-child { padding-bottom: 0; }
+.tl-dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
+{% endblock %}
+{% block content %}
+<div class="detail-wrap">
+  <div class="d-flex align-items-center gap-2 mb-3">
+    <a href="{% url 'dashboard_user' %}" class="section-sub text-decoration-none" style="font-size:13px"><i class="bi bi-arrow-left me-1"></i>Kembali</a>
+    <span class="section-sub" style="font-size:13px">/</span>
+    <span style="font-size:13px;font-weight:700;color:var(--teal);font-family:var(--display)">{{ laporan.nomor_laporan }}</span>
+  </div>
+
+  <!-- FOTO & INFO UTAMA -->
+  <div class="detail-card">
+    {% if laporan.foto %}
+    <img src="{{ laporan.foto.url }}" class="detail-photo mb-3" alt="Foto laporan">
+    {% else %}
+    <div style="width:100%;height:190px;background:var(--bg);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:54px;color:{{ laporan.get_kategori_warna }};margin-bottom:15px"><i class="bi {{ laporan.get_kategori_icon }}"></i></div>
+    {% endif %}
+    <h2 style="font-family:var(--display);font-weight:700;font-size:19px;margin-bottom:7px">{{ laporan.deskripsi }}</h2>
+    <p class="section-sub" style="font-size:13px;margin-bottom:13px"><i class="bi bi-geo-alt me-1 text-green"></i>{{ laporan.alamat }}</p>
+    <div class="d-flex gap-2 flex-wrap">
+      <span class="badge-{{ laporan.kategori }}">{{ laporan.get_kategori_display }}</span>
+      <span class="badge-{{ laporan.status }}">{{ laporan.get_status_display }}</span>
+      <span class="badge-pending"><i class="bi bi-flag"></i>Prioritas {{ laporan.get_prioritas_display }}</span>
+    </div>
+  </div>
+
+  <!-- PROGRESS STATUS -->
+  <div class="detail-card">
+    <div class="ctitle mb-3">Status Penanganan</div>
+    {% if laporan.status == 'ditolak' %}
+      <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px">
+        <div style="width:36px;height:36px;border-radius:50%;background:#dc3545;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="bi bi-x-lg"></i></div>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#842029">Laporan Ditolak</div>
+          <div style="font-size:12px;color:#9b6b6b">Laporan ini tidak dapat diproses lebih lanjut. Silakan lihat catatan admin di bawah.</div>
+        </div>
+      </div>
+    {% else %}
+      <div class="progress-steps">
+        <div class="step done">
+          <div class="step-dot"><i class="bi bi-check"></i></div>
+          <div class="step-lbl">Diterima</div>
+        </div>
+        <div class="step {% if laporan.status == 'diproses' %}active{% elif laporan.status == 'selesai' %}done{% endif %}">
+          <div class="step-dot"><i class="bi bi-gear"></i></div>
+          <div class="step-lbl">Diproses</div>
+        </div>
+        <div class="step {% if laporan.status == 'selesai' %}done{% endif %}">
+          <div class="step-dot"><i class="bi bi-check-circle"></i></div>
+          <div class="step-lbl">Selesai</div>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- META INFO -->
+  <div class="detail-card">
+    <div class="ctitle mb-3">Informasi Laporan</div>
+    <div class="meta-grid mb-3">
+      <div class="meta-item"><div class="meta-lbl">Nomor Laporan</div><div class="meta-val">{{ laporan.nomor_laporan }}</div></div>
+      <div class="meta-item"><div class="meta-lbl">Tanggal Dibuat</div><div class="meta-val">{{ laporan.dibuat_pada|date:"d M Y, H:i" }}</div></div>
+      <div class="meta-item"><div class="meta-lbl">Kategori</div><div class="meta-val">{{ laporan.get_kategori_display }}</div></div>
+      <div class="meta-item"><div class="meta-lbl">Pelapor</div><div class="meta-val">{{ laporan.pelapor.get_full_name }}</div></div>
+    </div>
+    {% if laporan.catatan_admin %}
+    <div style="background:var(--teal-l);border:1px solid var(--teal-line);border-radius:7px;padding:12px">
+      <div class="meta-lbl mb-1">Catatan dari Admin</div>
+      <p class="mb-0" style="font-size:13px">{{ laporan.catatan_admin }}</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- TIMELINE -->
+  <div class="detail-card">
+    <div class="ctitle mb-3">Riwayat Aktivitas</div>
+    <div style="position:relative">
+      {% for akt in aktivitas %}
+      <div class="tl-item">
+        <div class="tl-dot" style="background:
+          {% if akt.warna == 'danger' %}#dc3545
+          {% elif akt.warna == 'info' %}#1E40AF
+          {% elif akt.warna == 'success' %}#0E4C5A
+          {% elif akt.warna == 'warning' %}#D97706
+          {% else %}#6b7280{% endif %}">
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:500">{{ akt.deskripsi }}</div>
+          <div class="section-sub" style="font-size:11px">{{ akt.dibuat_pada|date:"d M Y · H:i" }}{% if akt.oleh %} · oleh {{ akt.oleh.get_full_name }}{% endif %}</div>
+        </div>
+      </div>
+      {% empty %}
+      <p class="section-sub small">Belum ada aktivitas.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}
