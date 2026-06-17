@@ -3,12 +3,6 @@ from django.conf import settings
 from openai import OpenAI
 
 
-client = OpenAI(
-    api_key=settings.DEEPSEEK_API_KEY,
-    base_url="https://api.deepseek.com",
-)
-
-
 def ada_kata(teks, daftar_kata):
     return any(kata in teks for kata in daftar_kata)
 
@@ -152,6 +146,22 @@ def analisis_laporan_dengan_ai(deskripsi, alamat=""):
     kategori_cadangan = deteksi_kategori_lokal(deskripsi, alamat)
 
     if not settings.DEEPSEEK_API_KEY:
+        return {
+            "kategori": kategori_cadangan,
+            "prioritas": "sedang",
+            "confidence": 50
+        }
+
+    # Koneksi AI dibuat di sini (bukan saat file dimuat), agar aplikasi tetap
+    # berjalan walaupun kunci API tidak ada. Jika pembuatan koneksi gagal,
+    # sistem otomatis memakai deteksi kategori lokal sebagai cadangan.
+    try:
+        client = OpenAI(
+            api_key=settings.DEEPSEEK_API_KEY,
+            base_url="https://api.deepseek.com",
+        )
+    except Exception as e:
+        print("ERROR INISIALISASI DEEPSEEK:", e)
         return {
             "kategori": kategori_cadangan,
             "prioritas": "sedang",
