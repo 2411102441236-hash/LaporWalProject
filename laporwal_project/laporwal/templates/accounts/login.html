@@ -1,10 +1,16 @@
 {% extends 'base.html' %}
+{% load socialaccount %}
 {% block title %}Masuk{% endblock %}
 {% block extra_css %}
 .auth-wrap { min-height: calc(100vh - 160px); display: flex; align-items: center; justify-content: center; padding: 44px 16px; }
 .auth-card { background: #fff; border: 1px solid var(--line); border-top: 3px solid var(--amber); border-radius: 10px; padding: 38px; width: 100%; max-width: 430px; }
 .auth-logo { text-align: center; margin-bottom: 24px; }
 .auth-icon { width: 54px; height: 54px; background: var(--teal-l); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; color: var(--teal); font-size: 26px; }
+.btn-google { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 12px; border: 1.5px solid var(--line); border-radius: 8px; background: #fff; color: #16242A; font-weight: 600; font-size: 15px; text-decoration: none; transition: all .15s; }
+.btn-google:hover { background: #F8FAFA; border-color: #C9D6D9; color: #16242A; }
+.btn-google i { color: #EA4335; font-size: 19px; }
+.auth-divider { display: flex; align-items: center; gap: 12px; margin: 22px 0; color: var(--muted); font-size: 12px; }
+.auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--line); }
 .tab-switch { display: flex; background: #F1F4F4; border-radius: 7px; padding: 4px; margin-bottom: 22px; }
 .tab-btn { flex: 1; text-align: center; padding: 8px; border-radius: 5px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; background: transparent; color: var(--muted); text-decoration: none; transition: all 0.15s; }
 .tab-btn.active { background: #fff; color: var(--teal); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
@@ -17,11 +23,14 @@
       <div style="font-family:var(--display);font-weight:800;font-size:18px;color:var(--teal-d)">LaporWal</div>
       <p class="section-sub" style="font-size:13px">Platform Pengaduan Infrastruktur Samarinda</p>
     </div>
-    <div class="tab-switch">
-      <a href="{% url 'login' %}" class="tab-btn active">Masuk</a>
-      <a href="{% url 'register' %}" class="tab-btn">Daftar</a>
-    </div>
-    <form method="post" novalidate>
+
+    <a href="{% provider_login_url 'google' %}" class="btn-google">
+      <i class="bi bi-google"></i> Masuk dengan Google
+    </a>
+
+    <div class="auth-divider">atau dengan akun lokal</div>
+
+    <form method="post" action="{% url 'login' %}" novalidate>
       {% csrf_token %}
       <div class="mb-3">
         <label class="form-label">Username</label>

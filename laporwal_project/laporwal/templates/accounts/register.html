@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load socialaccount %}
 {% block title %}Daftar{% endblock %}
 {% block extra_css %}
 .auth-wrap { min-height: calc(100vh - 160px); display: flex; align-items: center; justify-content: center; padding: 44px 16px; }
@@ -6,6 +7,11 @@
 .tab-switch { display: flex; background: #F1F4F4; border-radius: 7px; padding: 4px; margin-bottom: 22px; }
 .tab-btn { flex: 1; text-align: center; padding: 8px; border-radius: 5px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; background: transparent; color: var(--muted); text-decoration: none; transition: all 0.15s; }
 .tab-btn.active { background: #fff; color: var(--teal); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+.btn-google { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 12px; border: 1.5px solid var(--line); border-radius: 8px; background: #fff; color: #16242A; font-weight: 600; font-size: 15px; text-decoration: none; transition: all .15s; }
+.btn-google:hover { background: #F8FAFA; border-color: #C9D6D9; color: #16242A; }
+.btn-google i { color: #EA4335; font-size: 19px; }
+.auth-divider { display: flex; align-items: center; gap: 12px; margin: 22px 0; color: var(--muted); font-size: 12px; }
+.auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--line); }
 .errorlist { list-style: none; padding: 0; margin: 4px 0 0; }
 .errorlist li { font-size: 12px; color: #dc3545; }
 {% endblock %}
@@ -20,6 +26,12 @@
       <a href="{% url 'login' %}" class="tab-btn">Masuk</a>
       <a href="{% url 'register' %}" class="tab-btn active">Daftar</a>
     </div>
+
+    <a href="{% provider_login_url 'google' %}" class="btn-google">
+      <i class="bi bi-google"></i> Daftar dengan Google
+    </a>
+    <div class="auth-divider">atau isi data secara manual</div>
+
     <form method="post" novalidate>
       {% csrf_token %}
       <div class="row g-2 mb-3">
