@@ -23,6 +23,14 @@
 .report-card { background:#fff; border:1px solid var(--line); border-radius:8px; padding:14px; display:flex; gap:12px; align-items:flex-start; height:100%; transition:border-color 0.15s; }
 .report-card:hover { border-color:var(--teal); }
 .rthumb { width:50px; height:50px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; color:#fff; }
+.dstat-card { background:#fff; border:1px solid var(--line); border-top:3px solid var(--amber); border-radius:8px; padding:22px 24px; }
+.dbar-row { display:flex; align-items:center; gap:13px; margin-bottom:13px; }
+.dbar-row:last-child { margin-bottom:0; }
+.dbar-lbl { font-size:13px; font-weight:600; color:var(--ink); width:210px; flex-shrink:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center; gap:7px; }
+.dbar-lbl .rank { width:20px; height:20px; border-radius:50%; background:var(--teal-l); color:var(--teal); font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.dbar-track { flex:1; height:10px; background:#EEF2F2; border-radius:4px; overflow:hidden; }
+.dbar-fill { height:100%; border-radius:4px; background:var(--teal); }
+.dbar-val { font-family:var(--display); font-size:14px; font-weight:800; color:var(--teal); width:34px; text-align:right; }
 {% endblock %}
 {% block content %}
 <section class="hero">
@@ -71,6 +79,26 @@
       <div class="col-md-4">
         <div class="feature-card"><div class="feature-icon"><i class="bi bi-clipboard-check"></i></div><h3 style="font-family:var(--display);font-weight:700;font-size:16px;margin-bottom:6px">Pantau Hingga Tuntas</h3><p class="section-sub mb-0" style="line-height:1.55">Terima update status laporan Anda secara real-time hingga masalah selesai.</p></div>
       </div>
+    </div>
+  </div>
+</section>
+
+<section class="pb-2">
+  <div class="container">
+    <div class="mb-3">
+      <h2 class="section-title mb-0"><i class="bi bi-geo-alt-fill" style="color:var(--amber-d)"></i> Daerah Paling Sering Dilaporkan</h2>
+      <p class="section-sub mb-0">Titik dengan keluhan infrastruktur terbanyak dari warga</p>
+    </div>
+    <div class="dstat-card">
+      {% for d in daerah_data %}
+      <div class="dbar-row">
+        <div class="dbar-lbl" title="{{ d.nama }}"><span class="rank">{{ forloop.counter }}</span>{{ d.nama|truncatechars:30 }}</div>
+        <div class="dbar-track"><div class="dbar-fill" style="width:{% if daerah_max > 0 %}{% widthratio d.jumlah daerah_max 100 %}%{% else %}0%{% endif %}"></div></div>
+        <div class="dbar-val">{{ d.jumlah }}</div>
+      </div>
+      {% empty %}
+      <p class="section-sub mb-0 text-center py-3">Belum ada data laporan.</p>
+      {% endfor %}
     </div>
   </div>
 </section>
