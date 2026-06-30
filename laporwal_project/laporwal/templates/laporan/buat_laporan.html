@@ -15,6 +15,15 @@
 .gps-bar { display: flex; align-items: center; gap: 11px; padding: 12px 14px; background: var(--teal-l); border-radius: 7px; border: 1px solid var(--teal-line); }
 .gps-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--teal); flex-shrink: 0; }
 #preview-img { display: none; width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-top: 12px; }
+.dup-warn { background: #FFF7E6; border: 1px solid #F4C430; border-left: 4px solid var(--amber-d); border-radius: 8px; padding: 16px 18px; margin-bottom: 18px; }
+.dup-warn-head { font-family: var(--display); font-weight: 700; font-size: 15px; color: #92600A; display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.dup-warn p { font-size: 13px; color: #6B5318; margin-bottom: 10px; }
+.dup-list { list-style: none; padding: 0; margin: 0 0 10px; }
+.dup-item { background: #fff; border: 1px solid #F0E2C0; border-radius: 7px; padding: 10px 12px; margin-bottom: 8px; }
+.dup-item a { font-weight: 700; color: var(--teal); text-decoration: none; }
+.dup-item .dup-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.dup-item .dup-desc { font-size: 12px; color: var(--ink); margin-top: 4px; }
+.dup-note { font-size: 12px; color: #6B5318; margin-bottom: 0 !important; }
 {% endblock %}
 {% block content %}
 <div class="form-wrap">
@@ -23,8 +32,27 @@
     <p class="section-sub">Laporkan masalah infrastruktur di lingkungan Anda</p>
   </div>
 
+  {% if laporan_serupa %}
+  <div class="dup-warn">
+    <div class="dup-warn-head"><i class="bi bi-exclamation-triangle-fill"></i> Mungkin sudah ada laporan serupa</div>
+    <p>Kami menemukan laporan dengan kategori &amp; lokasi yang mirip. Silakan periksa dulu — mungkin masalah ini sudah dilaporkan:</p>
+    <ul class="dup-list">
+      {% for lap in laporan_serupa %}
+      <li class="dup-item">
+        <a href="{% url 'detail_laporan' lap.pk %}" target="_blank">{{ lap.nomor_laporan }}</a>
+        <span class="badge bg-{{ lap.get_status_color }} ms-1">{{ lap.get_status_display }}</span>
+        <div class="dup-meta"><i class="bi bi-geo-alt"></i> {{ lap.alamat|truncatechars:55 }}</div>
+        <div class="dup-desc">{{ lap.deskripsi|truncatechars:90 }}</div>
+      </li>
+      {% endfor %}
+    </ul>
+    <p class="dup-note"><i class="bi bi-info-circle me-1"></i>Jika laporan Anda <b>berbeda</b> dari yang di atas, pilih ulang foto lalu klik <b>"Tetap kirim laporan ini"</b> di bawah.</p>
+  </div>
+  {% endif %}
+
   <form method="post" enctype="multipart/form-data" id="laporan-form" novalidate>
     {% csrf_token %}
+    {% if laporan_serupa %}<input type="hidden" name="konfirmasi_kirim" value="1">{% endif %}
     <input type="hidden" name="latitude" id="lat-input">
     <input type="hidden" name="longitude" id="lng-input">
 
@@ -86,7 +114,7 @@
 
     <!-- SUBMIT -->
     <button type="submit" class="btn-green w-100" style="padding:14px;font-size:16px">
-      <i class="bi bi-send"></i>Kirim Laporan
+      <i class="bi bi-send"></i>{% if laporan_serupa %}Tetap kirim laporan ini{% else %}Kirim Laporan{% endif %}
     </button>
     <a href="{% url 'beranda' %}" class="d-block text-center section-sub mt-3" style="font-size:13px;text-decoration:none">Batal, kembali ke beranda</a>
   </form>
@@ -135,8 +163,21 @@ document.querySelectorAll('.cat-chip').forEach(function(chip){
     document.getElementById('kategori-input').value = this.dataset.val;
   });
 });
-// Set default chip
-document.querySelector('.cat-chip[data-val="lainnya"]').classList.add('selected');
+// Set chip terpilih (default 'lainnya', atau pertahankan pilihan sebelumnya)
+var katTerpilih = "{{ kategori_terpilih|default:'lainnya' }}";
+var chipTerpilih = document.querySelector('.cat-chip[data-val="' + katTerpilih + '"]');
+(chipTerpilih || document.querySelector('.cat-chip[data-val="lainnya"]')).classList.add('selected');
+document.getElementById('kategori-input').value = katTerpilih;
+
+// Pertahankan koordinat GPS bila sudah terdeteksi sebelumnya
+var latTerisi = "{{ lat_terisi|default:'' }}";
+var lngTerisi = "{{ lng_terisi|default:'' }}";
+if (latTerisi && lngTerisi) {
+  document.getElementById('lat-input').value = latTerisi;
+  document.getElementById('lng-input').value = lngTerisi;
+  document.getElementById('gps-status').textContent = 'Lokasi sudah terdeteksi sebelumnya';
+  document.getElementById('gps-coord').textContent = latTerisi + ', ' + lngTerisi;
+}
 
 // GPS detection
 function getLocation() {
