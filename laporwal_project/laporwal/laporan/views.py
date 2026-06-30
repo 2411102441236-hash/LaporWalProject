@@ -8,6 +8,7 @@ from django.utils import timezone
 from .models import Laporan, AktivitasLaporan, Notifikasi
 from .forms import LaporanForm, UpdateStatusForm
 from .deepseek_ai import analisis_laporan_dengan_ai
+from .duplikat import cari_laporan_serupa
 from accounts.models import CustomUser
 
 
@@ -72,6 +73,29 @@ def buat_laporan(request):
 
             if hasattr(laporan, "prioritas"):
                 laporan.prioritas = hasil_ai.get("prioritas", "sedang")
+
+            # === DETEKSI LAPORAN GANDA ===
+            # Jika belum dikonfirmasi user, cek apakah ada laporan serupa dulu.
+            if request.POST.get('konfirmasi_kirim') != '1':
+                laporan_serupa = cari_laporan_serupa(
+                    kategori=laporan.kategori,
+                    latitude=laporan.latitude,
+                    longitude=laporan.longitude,
+                    deskripsi=laporan.deskripsi,
+                )
+                if laporan_serupa:
+                    messages.warning(
+                        request,
+                        'Kami menemukan laporan yang mirip di lokasi ini. '
+                        'Mohon periksa dulu sebelum mengirim.'
+                    )
+                    return render(request, 'laporan/buat_laporan.html', {
+                        'form': form,
+                        'laporan_serupa': laporan_serupa,
+                        'kategori_terpilih': laporan.kategori,
+                        'lat_terisi': laporan.latitude or '',
+                        'lng_terisi': laporan.longitude or '',
+                    })
 
             laporan.save()
 
