@@ -1,3 +1,4 @@
+from collections import Counter
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -10,6 +11,28 @@ from .forms import LaporanForm, UpdateStatusForm
 from .deepseek_ai import analisis_laporan_dengan_ai
 from .duplikat import cari_laporan_serupa
 from accounts.models import CustomUser
+
+
+def _ambil_daerah(alamat):
+    """Ambil nama daerah/jalan dari alamat (bagian sebelum koma)."""
+    if not alamat:
+        return 'Tidak diketahui'
+    bagian = ' '.join(alamat.split(',')[0].strip().split())
+    return bagian[:60] if bagian else 'Tidak diketahui'
+
+
+def hitung_daerah_tersering(limit=6):
+    """Kembalikan (daftar daerah tersering, jumlah tertinggi) dari semua laporan."""
+    penghitung = Counter()
+    tampilan = {}
+    for alamat in Laporan.objects.values_list('alamat', flat=True):
+        nama = _ambil_daerah(alamat)
+        kunci = nama.lower()
+        penghitung[kunci] += 1
+        tampilan.setdefault(kunci, nama)
+    data = [{'nama': tampilan[k], 'jumlah': j} for k, j in penghitung.most_common(limit)]
+    maksimum = data[0]['jumlah'] if data else 0
+    return data, maksimum
 
 
 # ==================== HALAMAN PUBLIK ====================
@@ -27,9 +50,12 @@ def beranda(request):
     else:
         stats['persen_selesai'] = 0
     laporan_terbaru = Laporan.objects.select_related('pelapor').order_by('-dibuat_pada')[:6]
+    daerah_data, daerah_max = hitung_daerah_tersering()
     return render(request, 'laporan/beranda.html', {
         'stats': stats,
         'laporan_terbaru': laporan_terbaru,
+        'daerah_data': daerah_data,
+        'daerah_max': daerah_max,
     })
 
 
@@ -238,10 +264,15 @@ def admin_dashboard(request):
 
     laporan_terbaru = Laporan.objects.select_related('pelapor').order_by('-dibuat_pada')[:8]
 
+    # Statistik daerah yang paling sering dilaporkan
+    daerah_data, daerah_max = hitung_daerah_tersering()
+
     return render(request, 'laporan/admin_dashboard.html', {
         'stats': stats,
         'kategori_data': kategori_data,
         'laporan_terbaru': laporan_terbaru,
+        'daerah_data': daerah_data,
+        'daerah_max': daerah_max,
     })
 
 
